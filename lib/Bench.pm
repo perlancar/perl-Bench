@@ -127,7 +127,11 @@ __END__
 
  # specify bench options
  % perl -MBench -E'bench sub { ... }, 100'
- % perl -MBench -E'bench sub { ... }, {n=>-5, dumbbench=>1}'
+ % perl -MBench -E'bench sub { ... }, {n=>-5}'
+
+ # use Dumbbench as the backend
+ % perl -MDumbbench -MBench -E'bench sub { ... }'
+ % perl -MBench -E'bench sub { ... }, {dummbench=>1, dumbbench_options=>{...}}'
 
  # bench multiple codes
  % perl -MBench -E'bench {subs=>{a=>sub {...}, b=>sub {...}}, n=>-2}'
@@ -142,7 +146,7 @@ and a simpler interface. There is only one function, B<bench()>, and it's
 exported by default. If bench() is never called, the whole program will be
 timed.
 
-This module can be set to utilize L<Dumbbench> as the backend.
+This module can utilize L<Dumbbench> as the backend.
 
 =head1 FUNCTIONS
 
