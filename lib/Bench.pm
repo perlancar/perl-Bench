@@ -120,7 +120,7 @@ __END__
 
  # basic usage of bench()
  % perl -MBench -e'bench sub { ... }'
- iterations=100, total time=1.2340s, time/iter=0.0123s
+ 397 calls (198/s), 2.0054s (0.0051s/call)
 
  # get bench result in a variable
  % perl -MBench -E'my $res = bench sub { ... }'
@@ -129,8 +129,11 @@ __END__
  % perl -MBench -E'bench sub { ... }, 100'
  % perl -MBench -E'bench sub { ... }, {n=>-5, dumbbench=>1}'
 
- # time multiple codes
+ # bench multiple codes
  % perl -MBench -E'bench {subs=>{a=>sub {...}, b=>sub {...}}, n=>-2}'
+ a: 397 calls (198/s), 2.0054s (0.0051s/call)
+ b: 294 calls (146/s), 2.0094s (0.0068s/call)
+
 
 =head1 DESCRIPTION
 
