@@ -132,6 +132,8 @@ __END__
  # use Dumbbench as the backend
  % perl -MDumbbench -MBench -E'bench sub { ... }'
  % perl -MBench -E'bench sub { ... }, {dummbench=>1, dumbbench_options=>{...}}'
+ Ran 26 iterations (6 outliers).
+ Rounded run time per iteration: 2.9029e-02 +/- 4.8e-05 (0.2%)
 
  # bench multiple codes
  % perl -MBench -E'bench {subs=>{a=>sub {...}, b=>sub {...}}, n=>-2}'
