@@ -156,15 +156,15 @@ This module can utilize L<Dumbbench> as the backend.
 
 Syntax:
 
- bench(CODE)
- bench(CODE, {OPT=>VALUE, ...})
- bench(CODE, INT)               # equivalent to bench(CODE, {n=>1})
- bench({subs=>{...}, ...})
+ bench(CODEREF)                    # bench a single sub, default options
+ bench(CODEREF, HASHREF)           # specify options
+ bench(CODEREF, INT)               # equivalent to bench(CODEREF, {n=>INT})
+ bench(HASHREF)                    # bench multiple subs, must specify 'subs'
 
 Run Perl code and time it. Exported by default. Will print the result in void
 context.
 
-Available options:
+Options are specified in HASHREF. Available options:
 
 =over 4
 
