@@ -144,7 +144,7 @@ __END__
 =head1 DESCRIPTION
 
 This module is an alternative to L<Benchmark>. It provides some nice defaults
-and a simpler interface. There is only one function, B<bench()>, and it's
+and a simpler interface. There is only one function, B<bench()>, and it is
 exported by default. If bench() is never called, the whole program will be
 timed.
 
@@ -182,8 +182,8 @@ you want to time several subroutines instead of just one.
 
 =item * dumbbench => BOOL
 
-If 0, do not use L<Dumbbench> even if it's available. If 1, require and use
-L<Dumbbench>. If left undef, will use L<Dumbbench> if it's already loaded.
+If 0, do not use L<Dumbbench> even if it is available. If 1, require and use
+L<Dumbbench>. If left undef, will use L<Dumbbench> if it is already loaded.
 
 =item * dumbbench_options => HASHREF
 
