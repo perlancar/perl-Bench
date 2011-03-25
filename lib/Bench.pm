@@ -161,8 +161,8 @@ Syntax:
  bench(CODEREF, INT)               # equivalent to bench(CODEREF, {n=>INT})
  bench(HASHREF)                    # bench multiple subs, must specify 'subs'
 
-Run Perl code and time it. Exported by default. Will print the result in void
-context.
+Run Perl code and time it. Exported by default. Will print the result if called
+in void context.
 
 Options are specified in HASHREF. Available options:
 
