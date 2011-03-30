@@ -1,5 +1,14 @@
 Revision history for Bench
 
+0.02    2011-03-30
+
+        [ENHANCEMENTS]
+
+        - Display time in ms when appropriate.
+
+        - Reduce benchmarking overhead (especially when n is negative).
+
+
 0.01    2011-03-30
 
         - First release.

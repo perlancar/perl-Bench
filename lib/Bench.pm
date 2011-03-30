@@ -11,9 +11,6 @@ use Time::HiRes qw/gettimeofday tv_interval/;
 my $bench_called;
 my ($t0, $ti);
 
-sub _set_time0    { $t0 = [gettimeofday] }
-sub _set_interval { $ti = tv_interval($t0, [gettimeofday]) }
-
 sub import {
     _set_time0;
     no strict 'refs';
@@ -21,7 +18,11 @@ sub import {
     *{"$caller\::bench"} = \&bench;
 }
 
-sub fmt_sec {
+sub _set_time0    { $t0 = [gettimeofday] }
+
+sub _set_interval { $ti = tv_interval($t0, [gettimeofday]) }
+
+sub _fmt_sec {
     my $t = shift;
     my $fmt;
 
@@ -124,8 +125,8 @@ sub bench($;$) {
                 "",
                 (keys(%{$opts->{subs}}) > 1 ? "$codename: " : ""),
                 sprintf("%d calls (%.0f/s), %s (%s/call)",
-                        $i, $i/$ti, fmt_sec($ti),
-                        fmt_sec($i ? $ti/$i : 0))
+                        $i, $i/$ti, _fmt_sec($ti),
+                        _fmt_sec($i ? $ti/$i : 0))
             );
             say $res if $void;
             push @res, $res;
@@ -139,7 +140,7 @@ sub bench($;$) {
 
 END {
     $ti = tv_interval($t0, [gettimeofday]);
-    say fmt_sec($ti) unless $bench_called || $ENV{HARNESS_ACTIVE};
+    say _fmt_sec($ti) unless $bench_called || $ENV{HARNESS_ACTIVE};
 }
 
 1;
