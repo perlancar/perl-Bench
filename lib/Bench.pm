@@ -10,7 +10,8 @@ use Time::HiRes qw/gettimeofday tv_interval/;
 
 my $bench_called;
 my $t0;
-my $fmt = "%.4fs";
+my $fmt       = "%.3fs";
+my $fmt_small = "%.6fs";
 
 sub import {
     $t0 = [gettimeofday];
@@ -92,7 +93,7 @@ sub bench($;$) {
             my $res = join(
                 "",
                 (keys(%{$opts->{subs}}) > 1 ? "$codename: " : ""),
-                sprintf("%d calls (%.0f/s), $fmt ($fmt/call)",
+                sprintf("%d calls (%.0f/s), $fmt ($fmt_small/call)",
                         $i, $i/$ti, $ti, ($i ? $ti/$i : 0))
             );
             say $res if $void;
