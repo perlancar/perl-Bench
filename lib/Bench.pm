@@ -30,8 +30,14 @@ sub fmt_sec {
     } elsif ($t > 0.1) {
         $fmt = "%.4fs";
     } else {
-        $fmt = "%.3fms";
         $t *= 1000;
+        if ($t > 0.1) {
+            $fmt = "%.3fms";
+        } elsif ($t > 0.01) {
+            $fmt = "%.4fms";
+        } else {
+            $fmt = "%.5fms";
+        }
     }
     sprintf($fmt, $t);
 }
@@ -81,36 +87,45 @@ sub bench($;$) {
             my $n = $opts->{n};
 
             my $i = 0;
+
+            # run code once to set default n & j (to reduce the number of
+            # time-interval-taking when n is negative)
+            my $j = 1;
             _set_time0;
-
-            if (!defined($n)) {
-                $code->();
-                _set_interval;
-                $i++;
-                if ($ti >= 2) {
-                    $n = 1;
-                } else {
-                    $n = -2;
-                }
-                undef $ti;
-            }
-
-            while (1) {
-                last if $n >= 0 && $i >= $n;
-                $code->();
-                $i++;
-                if ($n < 0) {
-                    _set_interval;
-                    last if $ti >= -$n;
-                }
-            }
+            $code->();
             _set_interval;
+            $i++;
+            if ($ti >= 2) {
+                $n //= 1;
+            } else {
+                $n //= -2;
+                $j = $ti ? int(1/$ti) : 1000;
+            }
+
+            _set_time0;
+            if ($n >= 0) {
+                while ($i < $n) {
+                    $code->();
+                    $i++;
+                }
+                _set_interval;
+            } else {
+                $n = -$n;
+                while (1) {
+                    for (1..$j) {
+                        $code->();
+                        $i++;
+                    }
+                    _set_interval;
+                    last if $ti >= $n;
+                }
+            }
             my $res = join(
                 "",
                 (keys(%{$opts->{subs}}) > 1 ? "$codename: " : ""),
                 sprintf("%d calls (%.0f/s), %s (%s/call)",
                         $i, $i/$ti, fmt_sec($ti),
-                        fmt_sec($i ? $ti/$i*1000 : 0))
+                        fmt_sec($i ? $ti/$i : 0))
             );
             say $res if $void;
             push @res, $res;
