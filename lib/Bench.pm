@@ -11,16 +11,16 @@ use Time::HiRes qw/gettimeofday tv_interval/;
 my $bench_called;
 my ($t0, $ti);
 
+sub _set_time0    { $t0 = [gettimeofday] }
+
+sub _set_interval { $ti = tv_interval($t0, [gettimeofday]) }
+
 sub import {
     _set_time0;
     no strict 'refs';
     my $caller = caller();
     *{"$caller\::bench"} = \&bench;
 }
-
-sub _set_time0    { $t0 = [gettimeofday] }
-
-sub _set_interval { $ti = tv_interval($t0, [gettimeofday]) }
 
 sub _fmt_sec {
     my $t = shift;
