@@ -106,7 +106,8 @@ sub bench($;$) {
 }
 
 END {
-    say sprintf($fmt, tv_interval($t0, [gettimeofday])) unless $bench_called;
+    say sprintf($fmt, tv_interval($t0, [gettimeofday]))
+        unless $bench_called || $ENV{HARNESS_ACTIVE};
 }
 
 1;
