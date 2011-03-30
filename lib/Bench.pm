@@ -9,9 +9,7 @@ use Module::Loaded;
 use Time::HiRes qw/gettimeofday tv_interval/;
 
 my $bench_called;
-my $t0;
-my $fmt_total    = "%.3fs";
-my $fmt_per_call = "%.6fs";
+my ($t0, $ti);
 
 sub import {
     $t0 = [gettimeofday];
@@ -19,6 +17,21 @@ sub import {
     no strict 'refs';
     my $caller = caller();
     *{"$caller\::bench"} = \&bench;
+}
+
+sub fmt_sec {
+    my $t = shift;
+    my $fmt;
+
+    if ($t > 1) {
+        $fmt = "%.3fs";
+    } elsif ($t > 0.1) {
+        $fmt = "%.4fs";
+    } else {
+        $fmt = "%.3fms";
+        $t *= 1000;
+    }
+    sprintf($fmt, $t);
 }
 
 sub bench($;$) {
@@ -64,7 +77,6 @@ sub bench($;$) {
             my $code = $opts->{subs}{$codename};
 
             my $n = $opts->{n};
-            my $ti;
 
             my $i = 0;
             $t0 = [gettimeofday];
@@ -93,8 +105,9 @@ sub bench($;$) {
             my $res = join(
                 "",
                 (keys(%{$opts->{subs}}) > 1 ? "$codename: " : ""),
-                sprintf("%d calls (%.0f/s), $fmt_total ($fmt_per_call/call)",
-                        $i, $i/$ti, $ti, ($i ? $ti/$i : 0))
+                sprintf("%d calls (%.0f/s), %s (%s/call)",
+                        $i, $i/$ti, fmt_sec($ti),
+                        fmt_sec($i ? $ti/$i*1000 : 0))
             );
             say $res if $void;
             push @res, $res;
@@ -107,8 +120,8 @@ sub bench($;$) {
 }
 
 END {
-    say sprintf($fmt_total, tv_interval($t0, [gettimeofday]))
-        unless $bench_called || $ENV{HARNESS_ACTIVE};
+    $ti = tv_interval($t0, [gettimeofday]);
+    say fmt_sec($ti) unless $bench_called || $ENV{HARNESS_ACTIVE};
 }
 
 1;
