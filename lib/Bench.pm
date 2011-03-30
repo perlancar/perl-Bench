@@ -11,9 +11,11 @@ use Time::HiRes qw/gettimeofday tv_interval/;
 my $bench_called;
 my ($t0, $ti);
 
-sub import {
-    $t0 = [gettimeofday];
+sub _set_time0    { $t0 = [gettimeofday] }
+sub _set_interval { $ti = tv_interval($t0, [gettimeofday]) }
 
+sub import {
+    _set_time0;
     no strict 'refs';
     my $caller = caller();
     *{"$caller\::bench"} = \&bench;
@@ -79,11 +81,11 @@ sub bench($;$) {
             my $n = $opts->{n};
 
             my $i = 0;
-            $t0 = [gettimeofday];
+            _set_time0;
 
             if (!defined($n)) {
                 $code->();
-                $ti = tv_interval($t0, [gettimeofday]);
+                _set_interval;
                 $i++;
                 if ($ti >= 2) {
                     $n = 1;
@@ -96,12 +98,13 @@ sub bench($;$) {
             while (1) {
                 last if $n >= 0 && $i >= $n;
                 $code->();
-                $ti = tv_interval($t0, [gettimeofday]);
                 $i++;
-                last if $n < 0 &&
-                    ($ti = tv_interval($t0, [gettimeofday])) >= -$n;
+                if ($n < 0) {
+                    _set_interval;
+                    last if $ti >= -$n;
+                }
             }
-            $ti //= tv_interval($t0, [gettimeofday]);
+            _set_interval;
             my $res = join(
                 "",
                 (keys(%{$opts->{subs}}) > 1 ? "$codename: " : ""),
