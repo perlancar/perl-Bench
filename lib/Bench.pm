@@ -44,20 +44,23 @@ sub _fmt_sec {
 }
 
 sub bench($;$) {
-    my $opts;
-    if (ref($_[0]) eq 'CODE') {
-        my $sub = shift;
-        $opts = shift;
-        $opts //= {};
-        $opts = {n=>$opts} if ref($opts) ne 'HASH';
-        $opts->{subs} //= {CODE=>$sub};
-    } elsif (ref($_[0]) eq 'HASH') {
-        $opts = shift;
+    my ($subs0, $opts) = @_;
+    $opts //= {};
+    $opts   = {n=>$opts} if ref($opts) ne 'HASH';
+    my %subs;
+    if (ref($subs0) eq 'CODE') {
+        %subs = (a=>$subs0);
+    } elsif (ref($subs0) eq 'HASH') {
+        %subs = %$subs0;
+    } elsif (ref($subs0) eq 'ARRAY') {
+        my $name = "a";
+        for (@$subs0) { $subs{$name} = $_; $name++ }
     } else {
-        die "Usage: bench(CODEREF, OPTS) or bench(OPTS)";
+        die "Usage: bench(CODE|{a=>CODE,b=>CODE, ...}|[CODE, CODE, ...], ".
+            "{opt=>val, ...})";
     }
     die "Please specify one or more subs"
-        unless $opts->{subs} && keys %{$opts->{subs}};
+        unless keys %subs;
 
     my $use_dumbbench;
     if ($opts->{dumbbench}) {
@@ -74,16 +77,16 @@ sub bench($;$) {
         $opts->{dumbbench_options} //= {};
         my $bench = Dumbbench->new(%{ $opts->{dumbbench_options} });
         $bench->add_instances(
-            map { Dumbbench::Instance::PerlSub->new(code => $opts->{subs}{$_}) }
-                keys %{ $opts->{subs} }
+            map { Dumbbench::Instance::PerlSub->new(code => $subs{$_}) }
+                keys %subs
         );
         $bench->run;
         $bench->report;
 
     } else {
 
-        for my $codename (keys %{ $opts->{subs} }) {
-            my $code = $opts->{subs}{$codename};
+        for my $codename (sort keys %subs) {
+            my $code = $subs{$codename};
 
             my $n = $opts->{n};
 
@@ -123,7 +126,7 @@ sub bench($;$) {
             }
             my $res = join(
                 "",
-                (keys(%{$opts->{subs}}) > 1 ? "$codename: " : ""),
+                (keys(%subs) > 1 ? "$codename: " : ""),
                 sprintf("%d calls (%.0f/s), %s (%s/call)",
                         $i, $i/$ti, _fmt_sec($ti),
                         _fmt_sec($i ? $ti/$i : 0))
@@ -170,10 +173,10 @@ __END__
  Rounded run time per iteration: 2.9029e-02 +/- 4.8e-05 (0.2%)
 
  # bench multiple codes
- % perl -MBench -E'bench {subs=>{a=>sub {...}, b=>sub {...}}, n=>-2}'
+ % perl -MBench -E'bench {a=>sub{...}, b=>sub{...}}, {n=>-2}'
+ % perl -MBench -E'bench [sub{...}, sub{...}]'; # automatically named a, b, ...
  a: 397 calls (198/s), 2.0054s (0.0051s/call)
  b: 294 calls (146/s), 2.0094s (0.0068s/call)
-
 
 =head1 DESCRIPTION
 
@@ -186,19 +189,13 @@ This module can utilize L<Dumbbench> as the backend.
 
 =head1 FUNCTIONS
 
-=head2 bench
-
-Syntax:
-
- bench(CODEREF)                    # bench a single sub, default options
- bench(CODEREF, HASHREF)           # specify options
- bench(CODEREF, INT)               # equivalent to bench(CODEREF, {n=>INT})
- bench(HASHREF)                    # bench multiple subs, must specify 'subs'
+=head2 bench SUB(S)[, OPTS] => RESULT
 
 Run Perl code and time it. Exported by default. Will print the result if called
-in void context.
+in void context. SUB can be a coderef for specifying a single sub, or
+hashref/arrayref for specifying multiple subs.
 
-Options are specified in HASHREF. Available options:
+Options are specified in hashref OPTS. Available options:
 
 =over 4
 
@@ -208,11 +205,6 @@ Run the code C<n> times, or if negative, until at least C<n> seconds.
 
 If unspecified, the default behaviour is: if code runs for more than 2 seconds,
 it will only be run once (n=1). Otherwise n=-2.
-
-=item * subs => HASHREF
-
-Specify subroutine(s) to time. You normally need not specify this option, unless
-you want to time several subroutines instead of just one.
 
 =item * dumbbench => BOOL
 
