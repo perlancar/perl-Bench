@@ -90,20 +90,18 @@ sub bench($;$) {
 
             my $n = $opts->{n};
 
-            my $i = 0;
-
             # run code once to set default n & j (to reduce the number of
             # time-interval-taking when n is negative)
-            my $j = 1;
+            my $i = 0;
             _set_start_time;
             $code->();
             _set_interval;
+            my $j = $ti ? int(1/$ti) : 1000;
             $i++;
-            if ($ti >= 2) {
-                $n //= 1;
+            if ($ti <= 0.01) {
+                $n //= 100;
             } else {
-                $n //= -2;
-                $j = $ti ? int(1/$ti) : 1000;
+                $n //= int(1/$ti);
             }
 
             if ($n >= 0) {
@@ -156,7 +154,7 @@ __END__
 
  # basic usage of bench()
  % perl -MBench -e'bench sub { ... }'
- 397 calls (198/s), 2.0054s (0.0051s/call)
+ 100 calls (58548/s), 0.0017s (0.0171ms/call)
 
  # get bench result in a variable
  % perl -MBench -E'my $res = bench sub { ... }'
@@ -164,6 +162,7 @@ __END__
  # specify bench options
  % perl -MBench -E'bench sub { ... }, 100'
  % perl -MBench -E'bench sub { ... }, {n=>-5}'
+ 304347 calls (60665/s), 5.017s (0.0165ms/call)
 
  # use Dumbbench as the backend
  % perl -MDumbbench -MBench -E'bench sub { ... }'
@@ -174,8 +173,8 @@ __END__
  # bench multiple codes
  % perl -MBench -E'bench {a=>sub{...}, b=>sub{...}}, {n=>-2}'
  % perl -MBench -E'bench [sub{...}, sub{...}]'; # automatically named a, b, ...
- a: 397 calls (198/s), 2.0054s (5.051ms/call)
- b: 294 calls (146/s), 2.0094s (6.835ms/call)
+ a: 100 calls (12120/s), 0.0083s (0.0825ms/call)
+ b: 100 calls (5357/s), 0.0187s (0.187ms/call)
 
 =head1 DESCRIPTION
 
@@ -202,8 +201,7 @@ Options are specified in hashref OPTS. Available options:
 
 Run the code C<n> times, or if negative, until at least C<n> seconds.
 
-If unspecified, the default behaviour is: if code runs for more than 2 seconds,
-it will only be run once (n=1). Otherwise n=-2.
+If unspecified, the default behaviour is to run at most 1 second or 100 times.
 
 =item * dumbbench => BOOL
 
