@@ -1,5 +1,21 @@
 Revision history for Bench
 
+0.03    2011-03-31
+
+        [INCOMPATIBLE CHANGES]
+
+        - By default now only run code at most 100 times or 1s.
+
+        - Changed syntax for specifying multiple codes (suggested by
+          educated_foo).
+
+        - Use s all the time, but ms for per-call times.
+
+        [FIXES]
+
+        - A couple of small fixes.
+
+
 0.02    2011-03-30
 
         [ENHANCEMENTS]
