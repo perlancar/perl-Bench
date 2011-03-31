@@ -11,12 +11,16 @@ use Time::HiRes qw/gettimeofday tv_interval/;
 my $bench_called;
 my ($t0, $ti);
 
-sub _set_time0    { $t0 = [gettimeofday] }
+sub _set_start_time {
+    $t0 = [gettimeofday];
+}
 
-sub _set_interval { $ti = tv_interval($t0, [gettimeofday]) }
+sub _set_interval {
+    $ti = tv_interval($t0, [gettimeofday]);
+}
 
 sub import {
-    _set_time0;
+    _set_start_time;
     no strict 'refs';
     my $caller = caller();
     *{"$caller\::bench"} = \&bench;
@@ -54,7 +58,7 @@ sub bench($;$) {
         %subs = %$subs0;
     } elsif (ref($subs0) eq 'ARRAY') {
         my $name = "a";
-        for (@$subs0) { $subs{$name} = $_; $name++ }
+        for (@$subs0) { $subs{$name++} = $_ }
     } else {
         die "Usage: bench(CODE|{a=>CODE,b=>CODE, ...}|[CODE, CODE, ...], ".
             "{opt=>val, ...})";
@@ -85,8 +89,8 @@ sub bench($;$) {
 
     } else {
 
-        for my $codename (sort keys %subs) {
-            my $code = $subs{$codename};
+        for my $name (sort keys %subs) {
+            my $code = $subs{$name};
 
             my $n = $opts->{n};
 
@@ -95,7 +99,7 @@ sub bench($;$) {
             # run code once to set default n & j (to reduce the number of
             # time-interval-taking when n is negative)
             my $j = 1;
-            _set_time0;
+            _set_start_time;
             $code->();
             _set_interval;
             $i++;
@@ -106,7 +110,6 @@ sub bench($;$) {
                 $j = $ti ? int(1/$ti) : 1000;
             }
 
-            _set_time0;
             if ($n >= 0) {
                 while ($i < $n) {
                     $code->();
@@ -126,7 +129,7 @@ sub bench($;$) {
             }
             my $res = join(
                 "",
-                (keys(%subs) > 1 ? "$codename: " : ""),
+                (keys(%subs) > 1 ? "$name: " : ""),
                 sprintf("%d calls (%.0f/s), %s (%s/call)",
                         $i, $i/$ti, _fmt_sec($ti),
                         _fmt_sec($i ? $ti/$i : 0))
@@ -142,7 +145,7 @@ sub bench($;$) {
 }
 
 END {
-    $ti = tv_interval($t0, [gettimeofday]);
+    _set_interval;
     say _fmt_sec($ti) unless $bench_called || $ENV{HARNESS_ACTIVE};
 }
 
