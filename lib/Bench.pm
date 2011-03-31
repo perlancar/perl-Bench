@@ -26,25 +26,21 @@ sub import {
     *{"$caller\::bench"} = \&bench;
 }
 
-sub _fmt_sec {
-    my $t = shift;
+sub _fmt_num {
+    my ($num, $unit, $nsig) = @_;
+    $nsig //= 4;
     my $fmt;
 
-    if ($t > 1) {
-        $fmt = "%.3fs";
-    } elsif ($t > 0.1) {
-        $fmt = "%.4fs";
+    my $l = $num ? int(log(abs($num))/log(10)) : 0;
+    if ($l >= $nsig) {
+        $fmt = "%.0f";
+    } elsif ($l < 0) {
+        $fmt = "%.${nsig}f";
     } else {
-        $t *= 1000;
-        if ($t > 0.1) {
-            $fmt = "%.3fms";
-        } elsif ($t > 0.01) {
-            $fmt = "%.4fms";
-        } else {
-            $fmt = "%.5fms";
-        }
+        $fmt = "%.".($nsig-$l-1)."f";
     }
-    sprintf($fmt, $t);
+    #say "D:fmt=$fmt";
+    sprintf($fmt, $num) . ($unit // "");
 }
 
 sub bench($;$) {
@@ -130,9 +126,9 @@ sub bench($;$) {
             my $res = join(
                 "",
                 (keys(%subs) > 1 ? "$name: " : ""),
-                sprintf("%d calls (%.0f/s), %s (%s/call)",
-                        $i, $i/$ti, _fmt_sec($ti),
-                        _fmt_sec($i ? $ti/$i : 0))
+                sprintf("%d calls (%s/s), %s (%s/call)",
+                        $i, _fmt_num($i/$ti), _fmt_num($ti, "s"),
+                        _fmt_num($ti/$i*1000, "ms"))
             );
             say $res if $void;
             push @res, $res;
@@ -146,7 +142,7 @@ sub bench($;$) {
 
 END {
     _set_interval;
-    say _fmt_sec($ti) unless $bench_called || $ENV{HARNESS_ACTIVE};
+    say _fmt_num($ti, "s") unless $bench_called || $ENV{HARNESS_ACTIVE};
 }
 
 1;
@@ -156,7 +152,7 @@ __END__
 
  # time the whole program
  % perl -MBench -e'...'
- 0.1234s
+ 0.0123s
 
  # basic usage of bench()
  % perl -MBench -e'bench sub { ... }'
@@ -178,8 +174,8 @@ __END__
  # bench multiple codes
  % perl -MBench -E'bench {a=>sub{...}, b=>sub{...}}, {n=>-2}'
  % perl -MBench -E'bench [sub{...}, sub{...}]'; # automatically named a, b, ...
- a: 397 calls (198/s), 2.0054s (0.0051s/call)
- b: 294 calls (146/s), 2.0094s (0.0068s/call)
+ a: 397 calls (198/s), 2.0054s (5.051ms/call)
+ b: 294 calls (146/s), 2.0094s (6.835ms/call)
 
 =head1 DESCRIPTION
 
