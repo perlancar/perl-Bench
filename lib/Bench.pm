@@ -125,7 +125,7 @@ sub bench($;$) {
                 "",
                 (keys(%subs) > 1 ? "$name: " : ""),
                 sprintf("%d calls (%s/s), %s (%s/call)",
-                        $i, _fmt_num($i/$ti), _fmt_num($ti, "s"),
+                        $i, _fmt_num($ti ? $i/$ti : 0), _fmt_num($ti, "s"),
                         _fmt_num($ti/$i*1000, "ms"))
             );
             say $res if $void;
