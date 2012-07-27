@@ -1,0 +1,92 @@
+#!/usr/bin/perl
+
+use 5.010;
+use strict;
+use warnings;
+use Cwd qw(abs_path);
+
+die <<_ unless @ARGV;
+Usage:
+  $0 <program> [arg ...]
+  $0 -e <code>
+_
+
+my $code;
+if ($ARGV[0] eq '-e' && @ARGV > 1) {
+    $code = $ARGV[1];
+} elsif ($ARGV[0] =~ s/^-e// && @ARGV == 1) {
+    $code = $ARGV[0];
+} elsif (!(-f $ARGV[0])) {
+    $code = $ARGV[0];
+}
+
+if (defined $code) {
+    my $sub;
+    say "Benchmarking sub { $code } ...";
+    eval "\$sub = sub { $code };";
+    die $@ if $@;
+    require Bench;
+    Bench::bench($sub);
+} else {
+    my $prog  = shift @ARGV;
+    my $aprog = abs_path($prog); # or die "can't abs_path($prog): $!\n";
+    say "Benchmarking program $aprog ...";
+    require Bench; Bench->import;
+    do $aprog;
+}
+
+1;
+# ABSTRACT: Benchmark running times of Perl code
+
+=head1 SYNOPSIS
+
+ % bench -e'some_code()'
+ 26 calls (28.98/s), 0.897s (34.51ms/call)
+
+ % bench 'some_code()'
+ 26 calls (28.98/s), 0.897s (34.51ms/call)
+
+ % bench prog.pl; # if argument is a filename
+ 0.0320s
+
+
+=head1 DESCRIPTION
+
+This script is a command-line interface for L<Bench>.
+
+ % bench prog.pl
+
+is roughly equivalent to:
+
+ % perl -MBench -e'do "/abs/path/to/prog.pl"'; # time the whole program
+
+while:
+
+ % bench -e 'some_code()'
+ % bench 'some_code()'
+
+is roughly equivalent to:
+
+ % perl -MBench -e'bench sub { some_code() }'
+
+
+=head1 FAQ
+
+=head2 Why use this instead of 'time prog.pl'?
+
+The script is more portable (should run under Windows too).
+
+=head2 Why use this instead of 'perl -MBench -e'bench sub { ... }'?
+
+C<bench '...'> is shorter to type.
+
+
+=head1 TODO
+
+=over 4
+
+=item * -I?
+
+=back
+
+=cut
