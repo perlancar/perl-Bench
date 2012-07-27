@@ -1,5 +1,10 @@
 Revision history for Bench
 
+0.05    2012-07-27 (SHARYANTO)
+
+        - bin/bench: Forgot to support benchmarking multiple codes
+
+
 0.04    2012-07-27 (SHARYANTO)
 
         - Handle division by zero error [CT]
