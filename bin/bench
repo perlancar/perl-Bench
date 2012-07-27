@@ -36,15 +36,8 @@ if ($code) {
     my $prog  = shift @ARGV;
     my $aprog = abs_path($prog); # or die "can't abs_path($prog): $!\n";
     say "Benchmarking $aprog ...";
-    eval {
-        require Bench; Bench->import;
-        do $aprog;
-    };
-    if ($@) {
-        # oops, probably not a Perl script?
-        Bench::_set_start_time();
-        system @ARGV;
-    }
+    require Bench; Bench->import;
+    do $aprog;
 }
 
 1;
