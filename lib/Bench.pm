@@ -1,5 +1,6 @@
 package Bench;
-# ABSTRACT: Benchmark running times of Perl code
+
+# VERSION
 
 use 5.010;
 use strict;
@@ -144,7 +145,7 @@ END {
 }
 
 1;
-__END__
+# ABSTRACT: Benchmark running times of Perl code
 
 =head1 SYNOPSIS
 

@@ -1,6 +1,13 @@
 Revision history for Bench
 
-0.03    2011-03-31
+0.04    2012-07-27 (SHARYANTO)
+
+        - Handle division by zero error [CT]
+
+        - Add script: bin/bench
+
+
+0.03    2011-03-31 (SHARYANTO)
 
         [INCOMPATIBLE CHANGES]
 
@@ -16,7 +23,7 @@ Revision history for Bench
         - A couple of small fixes.
 
 
-0.02    2011-03-30
+0.02    2011-03-30 (SHARYANTO)
 
         [ENHANCEMENTS]
 
@@ -25,6 +32,6 @@ Revision history for Bench
         - Reduce benchmarking overhead (especially when n is negative).
 
 
-0.01    2011-03-30
+0.01    2011-03-30 (SHARYANTO)
 
         - First release.

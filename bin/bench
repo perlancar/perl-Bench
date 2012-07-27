@@ -5,6 +5,8 @@ use strict;
 use warnings;
 use Cwd qw(abs_path);
 
+# VERSION
+
 die <<_ unless @ARGV;
 Usage:
   $0 <program> [arg ...]
@@ -37,6 +39,7 @@ if (defined $code) {
 
 1;
 # ABSTRACT: Benchmark running times of Perl code
+# PODNAME: bench
 
 =head1 SYNOPSIS
 
