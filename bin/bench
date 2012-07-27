@@ -85,6 +85,8 @@ is roughly equivalent to:
 
 The script is more portable (should run under Windows too).
 
+On the other hand, B<bench> can only time Perl scripts.
+
 =head2 Why use this instead of 'perl -MBench -e'bench sub { ... }'?
 
 C<bench '...'> is shorter to type.
