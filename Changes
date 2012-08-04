@@ -1,5 +1,12 @@
 Revision history for Bench
 
+0.06    2012-07-27 (SHARYANTO)
+
+        - bin/bench: Run at least 1s for each sub
+
+        - Show who's fastest at the end (and by how much)
+
+
 0.05    2012-07-27 (SHARYANTO)
 
         - bin/bench: Forgot to support benchmarking multiple codes
