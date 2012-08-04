@@ -1,43 +1,86 @@
 #!/usr/bin/perl
 
 use 5.010;
-use strict;
+#use strict;
 use warnings;
+
 use Cwd qw(abs_path);
+use Getopt::Long;
 
 # VERSION
 
-die <<_ unless @ARGV;
-Usage:
-  $0 <program> [args ...]
-  $0 -e <code> ...
-_
+my $err;
+my $code_m = sub {
+    my $imp   = $_[0] eq 'm' ? ' ()' : '';
+    my $mod   = $_[1];
+    my $is_no = $mod =~ s/^-//;
+    if ($mod =~ /=/) {
+        $imp = '';
+        $mod =~ s!=(.*)! split(/,/,q{$1})!;
+    }
+    my $code = ($is_no ? "no " : "use ") . "$mod$imp;";
+    #say $code;
+    eval $code;
+    $err = $@ if $@;
+};
 
-my $code;
-if ($ARGV[0] eq '-e' && @ARGV > 1) {
-    shift @ARGV;
-    $code++;
-} elsif ($ARGV[0] =~ s/^-e//) {
-    $code++;
-} elsif (!(-f $ARGV[0])) {
-    $code++;
+my @codes;
+my $help;
+
+Getopt::Long::Configure('bundling', 'no_permute', 'no_ignore_case');
+GetOptions(
+    'I=s'     => sub {
+        eval "use lib q{$_[1]};";
+        $err = $@ if $@;
+    },
+    'm=s'     => sub { $code_m->(@_) },
+    'M=s'     => sub { $code_m->(@_) },
+    'e=s'     => sub { push @codes, $_[1] },
+    'h'       => \$help,
+    'b=s'     => sub {
+        eval $_[1];
+        $err = $@ if $@;
+    },
+);
+die $err if $err;
+
+if (!@codes && !@ARGV || $help) {
+    print <<'_';
+bench - Benchmark running times of Perl code
+
+Usage:
+  $0 [options] <perl-program> [program-args ...]
+  $0 [options] <code> ...
+
+Options:
+  -e <code>  Add subroutine code to bench (can also add via arguments)
+  -b <code>  Run code before benchmarking
+  -I <dir>   Prepend dir to @INC
+  -m <mod>
+  -M <mod>   Load module, like perl's -m/-M
+  -h         Show this help message
+
+_
+  exit !$help;
 }
 
-if ($code) {
-    my @subs;
-    say "Benchmarking ", join(", ", map { "sub { $_ }" } @ARGV), " ...";
-    for (@ARGV) {
-        eval "push \@subs, sub { $_ };";
-        die $@ if $@;
-    }
-    require Bench;
-    Bench::bench(\@subs, {n=>-1});
-} else {
+if (!@codes && (-f $ARGV[0])) {
     my $prog  = shift @ARGV;
     my $aprog = abs_path($prog); # or die "can't abs_path($prog): $!\n";
     say "Benchmarking $aprog ...";
     require Bench; Bench->import;
     do $aprog;
+} else {
+    push @codes, @ARGV;
+
+    say "Benchmarking ", join(", ", map { "sub { $_ }" } @codes), " ...";
+    my @subs;
+    for (@codes) {
+        eval "push \@subs, sub { $_ };";
+        die $@ if $@;
+    }
+    require Bench;
+    Bench::bench(\@subs, {n=>-1});
 }
 
 1;
@@ -46,58 +89,23 @@ if ($code) {
 
 =head1 SYNOPSIS
 
- % bench -e'some_code()'                     ; # -e is optional
+ % bench -e 'some_code()'                    ; # -e is optional
  Benchmarking sub { some_code() } ...
  26 calls (28.98/s), 0.897s (34.51ms/call)
 
- % bench 'some_code()' 'another_code()'      ; # multiple code
- Benchmarking sub { some_code() }, sub { another_code() } ...
- 26 calls (28.98/s), 0.897s (34.51ms/call)
+ % bench -MFoo::Bar 'code1()' 'code2()'      ; # multiple code
+ Benchmarking sub { code1() }, sub { code2() } ...
+ a: 26 calls (28.98/s), 0.897s (34.51ms/call)
+ b: 14 calls (15.37/s), 0.911s (65.07ms/call)
+ Fastest is a (1.886x b)
 
  % bench prog.pl;                            ; # file is automatically detected
  Benchmarking /abs/path/to/prog.pl ...
- 0.0320s
+ 0.0520s
 
 
 =head1 DESCRIPTION
 
 This script is a command-line interface for L<Bench>.
-
- % bench prog.pl
-
-is roughly equivalent to:
-
- % perl -MBench -e'do "/abs/path/to/prog.pl"'; # time the whole program
-
-while:
-
- % bench -e 'some_code()'
- % bench 'some_code()'
-
-is roughly equivalent to:
-
- % perl -MBench -e'bench sub { some_code() }'
-
-
-=head1 FAQ
-
-=head2 Why use this instead of 'time prog.pl'?
-
-The script is more portable (should run under Windows too).
-
-On the other hand, B<bench> can only time Perl scripts.
-
-=head2 Why use this instead of 'perl -MBench -e'bench sub { ... }'?
-
-C<bench '...'> is shorter to type.
-
-
-=head1 TODO
-
-=over 4
-
-=item * Accept -I?
-
-=back
 
 =cut
