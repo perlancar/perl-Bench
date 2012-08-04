@@ -31,7 +31,7 @@ if ($code) {
         die $@ if $@;
     }
     require Bench;
-    Bench::bench(\@subs);
+    Bench::bench(\@subs, {n=>-1});
 } else {
     my $prog  = shift @ARGV;
     my $aprog = abs_path($prog); # or die "can't abs_path($prog): $!\n";
