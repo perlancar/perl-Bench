@@ -1,6 +1,11 @@
 Revision history for Bench
 
-0.06    2012-07-27 (SHARYANTO)
+0.07    2012-08-05 (SHARYANTO)
+
+        - bin/bench: Add options -h, -M/m, -n, -I, -b
+
+
+0.06    2012-08-04 (SHARYANTO)
 
         - bin/bench: Run at least 1s for each sub
 
