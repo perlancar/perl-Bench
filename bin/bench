@@ -75,14 +75,18 @@ if (!@codes && (-f $ARGV[0])) {
 } else {
     push @codes, @ARGV;
 
-    say "Benchmarking ", join(", ", map { "sub { $_ }" } @codes), " ...";
-    my @subs;
+    my $name = "a";
+    my %subs;
+    for (@codes) { eval "\$subs{".($name++)."} = sub { $_ };" }
+    $name = "a";
+    say "Benchmarking ",
+        join(", ", map { $name++ . " => sub { $_ }" } @codes), " ...";
     for (@codes) {
         eval "push \@subs, sub { $_ };";
         die $@ if $@;
     }
     require Bench;
-    Bench::bench(\@subs, {n=>$opts{n}});
+    Bench::bench(\%subs, {n=>$opts{n}});
 }
 
 1;
