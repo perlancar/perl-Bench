@@ -1,5 +1,10 @@
 Revision history for Bench
 
+0.08    2012-08-05 (SHARYANTO)
+
+        - Shuffle order of execution
+
+
 0.07    2012-08-05 (SHARYANTO)
 
         - bin/bench: Add options -h, -M/m, -n, -I, -b
