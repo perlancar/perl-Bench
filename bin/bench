@@ -25,7 +25,7 @@ my $code_m = sub {
 };
 
 my @codes;
-my $help;
+my %opts = (n=>-1, help=>0);
 
 Getopt::Long::Configure('bundling', 'no_permute', 'no_ignore_case');
 GetOptions(
@@ -36,7 +36,8 @@ GetOptions(
     'm=s'     => sub { $code_m->(@_) },
     'M=s'     => sub { $code_m->(@_) },
     'e=s'     => sub { push @codes, $_[1] },
-    'h'       => \$help,
+    'h'       => \$opts{help},
+    'n=i'     => \$opts{n},
     'b=s'     => sub {
         eval $_[1];
         $err = $@ if $@;
@@ -53,6 +54,7 @@ Usage:
   $0 [options] <code> ...
 
 Options:
+  -n N       How many times (or how long in -N secs, if N < 0) to run the subs
   -e <code>  Add subroutine code to bench (can also add via arguments)
   -b <code>  Run code before benchmarking
   -I <dir>   Prepend dir to @INC
@@ -80,7 +82,7 @@ if (!@codes && (-f $ARGV[0])) {
         die $@ if $@;
     }
     require Bench;
-    Bench::bench(\@subs, {n=>-1});
+    Bench::bench(\@subs, {n=>$opts{n}});
 }
 
 1;
