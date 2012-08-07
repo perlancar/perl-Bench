@@ -114,4 +114,6 @@ if (!@codes && (-f $ARGV[0])) {
 
 This script is a command-line interface for L<Bench>.
 
+For all available options, try C<bench -h>.
+
 =cut
