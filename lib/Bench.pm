@@ -192,8 +192,10 @@ END {
  # bench multiple codes
  % perl -MBench -E'bench {a=>sub{...}, b=>sub{...}}, {n=>-2}'
  % perl -MBench -E'bench [sub{...}, sub{...}]'; # automatically named a, b, ...
+ b: 100 calls (5357/s), 0.0187s (0.1870ms/call)
  a: 100 calls (12120/s), 0.0083s (0.0825ms/call)
- b: 100 calls (5357/s), 0.0187s (0.187ms/call)
+ Fastest is a (2.267x b)
+
 
 =head1 DESCRIPTION
 
