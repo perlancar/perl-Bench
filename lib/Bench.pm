@@ -239,6 +239,8 @@ Options that will be passed to Dumbbench constructor, e.g.
 
 =head1 SEE ALSO
 
+L<bench>, command-line interface for this module
+
 L<Benchmark>
 
 L<Dumbbench>
