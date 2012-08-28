@@ -42,6 +42,10 @@ GetOptions(
         eval $_[1];
         $err = $@ if $@;
     },
+    'v'     => sub {
+        say "$0 version $main::VERSION";
+        exit 0;
+    },
 );
 die $err if $err;
 
@@ -60,7 +64,8 @@ Options:
   -I <dir>   Prepend dir to @INC
   -m <mod>
   -M <mod>   Load module, like perl's -m/-M
-  -h         Show this help message
+  -h         Show this help message and exit
+  -v         Show version and exit
 
 _
   exit !$help;
