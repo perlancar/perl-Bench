@@ -237,6 +237,15 @@ Options that will be passed to Dumbbench constructor, e.g.
 =back
 
 
+=head1 NOTES
+
+B<Prototypes>. I'm a bit ticked off that I can't write C<bench { code ... }>,
+instead I have to settle with C<bench sub { code ... }>. This is because I also
+want the same C<bench> function to be able to benchmark multiple subroutines
+(i.e. C<< bench { sub1 => code, ... } >> as well as C<< bench [code, ...] >>.
+Maybe when Perl 5 has multiple dispatch?
+
+
 =head1 SEE ALSO
 
 L<bench>, command-line interface for this module
