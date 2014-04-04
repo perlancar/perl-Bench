@@ -43,7 +43,7 @@ GetOptions(
         $err = $@ if $@;
     },
     'v'     => sub {
-        say "$0 version $main::VERSION";
+        say "bench version $main::VERSION";
         exit 0;
     },
 );
@@ -54,8 +54,8 @@ if (!@codes && !@ARGV || $help) {
 bench - Benchmark running times of Perl code
 
 Usage:
-  $0 [options] <perl-program> [program-args ...]
-  $0 [options] <code> ...
+  bench [options] <perl-program> [program-args ...]
+  bench [options] <code> ...
 
 Options:
   -n N       How many times (or how long in -N secs, if N < 0) to run the subs
