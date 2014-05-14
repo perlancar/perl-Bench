@@ -245,6 +245,12 @@ want the same C<bench> function to be able to benchmark multiple subroutines
 (i.e. C<< bench { sub1 => code, ... } >> as well as C<< bench [code, ...] >>.
 Maybe when Perl 5 has multiple dispatch?
 
+B<Overhead>. In C<bench sub { code }> be aware that the subroutine call itself
+has an overhead (around 135 ns on my Core i5 laptop). Thus the C<code> you're
+benchmarking needs to be relatively heavier than this overhead, e.g. it's better
+if you do C<< bench sub { for(1..1000) { $x++ } } >> instead of C<< bench sub {
+$x++ } >>. TODO: Factor out this overhead.
+
 
 =head1 SEE ALSO
 
