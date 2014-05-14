@@ -8,7 +8,9 @@ use Cwd qw(abs_path);
 use Getopt::Long;
 
 # VERSION
+# DATE
 
+# code to implement -m and -M options
 my $err;
 my $code_m = sub {
     my $imp   = $_[0] eq 'm' ? ' ()' : '';
@@ -25,7 +27,7 @@ my $code_m = sub {
 };
 
 my @codes;
-my %opts = (n=>-1, help=>0);
+my %opts = (n=>100, help=>0);
 
 Getopt::Long::Configure('bundling', 'no_permute', 'no_ignore_case');
 GetOptions(
@@ -58,7 +60,9 @@ Usage:
   bench [options] <code> ...
 
 Options:
-  -n N       How many times (or how long in -N secs, if N < 0) to run the subs
+  -n N (default: 100)
+             How many times (or how long in -N CPU secs, if N < 0) to run the
+             subs
   -e <code>  Add subroutine code to bench (can also add via arguments)
   -b <code>  Run code before benchmarking
   -I <dir>   Prepend dir to @INC

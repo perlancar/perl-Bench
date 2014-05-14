@@ -6,8 +6,6 @@ use 5.010001;
 use strict;
 use warnings;
 
-use List::Util qw/shuffle/;
-use Module::Loaded;
 use Time::HiRes qw/gettimeofday tv_interval/;
 
 my $bench_called;
@@ -49,6 +47,8 @@ sub bench($;$) {
     my ($subs0, $opts) = @_;
     $opts //= {};
     $opts   = {n=>$opts} if ref($opts) ne 'HASH';
+    $opts->{t} //= 1;
+    $opts->{n} //= 100;
     my %subs;
     if (ref($subs0) eq 'CODE') {
         %subs = (a=>$subs0);
@@ -69,10 +69,9 @@ sub bench($;$) {
         $use_dumbbench++;
         require Dumbbench;
     } elsif (!defined $opts->{dumbbench}) {
-        $use_dumbbench++ if is_loaded('Dumbbench');
+        $use_dumbbench++ if $INC{"Dumbbench.pm"};
     }
 
-    my @res;
     my $void = !defined(wantarray);
     if ($use_dumbbench) {
 
@@ -86,75 +85,14 @@ sub bench($;$) {
         $bench->report;
 
     } else {
-
-        my %calltimes; # key=name, val=per-call time
-
-        for my $name (shuffle keys %subs) {
-            my $code = $subs{$name};
-
-            my $n = $opts->{n};
-
-            # run code once to set default n & j (to reduce the number of
-            # time-interval-taking when n is negative)
-            my $i = 0;
-            _set_start_time;
-            $code->();
-            _set_interval;
-            my $j = $ti ? int(1/$ti) : 1000;
-            $i++;
-            if ($ti <= 0.01) {
-                $n //= 100;
-            } else {
-                $n //= int(1/$ti);
-            }
-
-            if ($n >= 0) {
-                while ($i < $n) {
-                    $code->();
-                    $i++;
-                }
-                _set_interval;
-            } else {
-                $n = -$n;
-                while (1) {
-                    for (1..$j) {
-                        $code->();
-                        $i++;
-                    }
-                    _set_interval;
-                    last if $ti >= $n;
-                }
-            }
-            my $res = join(
-                "",
-                (keys(%subs) > 1 ? "$name: " : ""),
-                sprintf("%d calls (%s/s), %s (%s/call)",
-                        $i, _fmt_num($ti ? $i/$ti : 0), _fmt_num($ti, "s"),
-                        _fmt_num($ti/$i*1000, "ms"))
-            );
-            say $res if $void;
-            push @res, $res;
-            $calltimes{$name} = $ti/$i;
-        }
-
-        if (keys(%subs) > 1) {
-            my @subs = sort {$a->[1] <=> $b->[1]}
-                map {[$_, $calltimes{$_}]} keys %subs;
-            if ($subs[0][1] > 0) {
-                my $res = "Fastest is $subs[0][0] (";
-                for (1..@subs-1) {
-                    $res .= ($_ > 1 ? ", ":"") .
-                        _fmt_num($subs[$_][1]/$subs[0][1], "x")." $subs[$_][0]";
-                }
-                $res .= ")";
-                say $res if $void;
-                push @res, $res;
-            }
-        }
+        require Benchmark;
+        Benchmark::timethese(
+            $opts->{n},
+            \%subs,
+        );
     }
 
     $bench_called++;
-    join("\n", @res);
 }
 
 END {
@@ -199,30 +137,27 @@ END {
 
 =head1 DESCRIPTION
 
-This module is an alternative to L<Benchmark>. It provides some nice defaults
-and a simpler interface. There is only one function, B<bench()>, and it is
-exported by default. If bench() is never called, the whole program will be
+This module is an alternative interface for L<Benchmark>. It provides some nice
+defaults and a simpler interface. There is only one function, B<bench()>, and it
+is exported by default. If bench() is never called, the whole program will be
 timed.
 
-This module can utilize L<Dumbbench> as the backend.
+This module can utilize L<Dumbbench> as the backend instead of L<Benchmark>.
 
 =head1 FUNCTIONS
 
-=head2 bench SUB(S)[, OPTS] => RESULT
+=head2 bench SUB(S)[, OPTS]
 
-Run Perl code and time it. Exported by default. Will print the result if called
-in void context. SUB can be a coderef for specifying a single sub, or
-hashref/arrayref for specifying multiple subs.
+Run Perl code(s) and time it (them). Exported by default. SUB can be a coderef
+for specifying a single sub, or hashref/arrayref for specifying multiple subs.
 
 Options are specified in hashref OPTS. Available options:
 
 =over 4
 
-=item * n => INT
+=item * n => INT (default: 100)
 
-Run the code C<n> times, or if negative, until at least C<n> seconds.
-
-If unspecified, the default behaviour is to run at most 1 second or 100 times.
+Run the code C<n> times, or if negative, until at least C<n> CPU seconds.
 
 =item * dumbbench => BOOL
 
@@ -235,21 +170,6 @@ Options that will be passed to Dumbbench constructor, e.g.
 {target_rel_precision=>0.005, initial_runs=>20}.
 
 =back
-
-
-=head1 NOTES
-
-B<Prototypes>. I'm a bit ticked off that I can't write C<bench { code ... }>,
-instead I have to settle with C<bench sub { code ... }>. This is because I also
-want the same C<bench> function to be able to benchmark multiple subroutines
-(i.e. C<< bench { sub1 => code, ... } >> as well as C<< bench [code, ...] >>.
-Maybe when Perl 5 has multiple dispatch?
-
-B<Overhead>. In C<bench sub { code }> be aware that the subroutine call itself
-has an overhead (around 135 ns on my Core i5 laptop). Thus the C<code> you're
-benchmarking needs to be relatively heavier than this overhead, e.g. it's better
-if you do C<< bench sub { for(1..1000) { $x++ } } >> instead of C<< bench sub {
-$x++ } >>. TODO: Factor out this overhead.
 
 
 =head1 SEE ALSO
