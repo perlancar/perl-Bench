@@ -1,5 +1,11 @@
 Revision history for Bench
 
+0.10    2014-05-14 (SHARYANTO)
+
+        - Use Benchmark as the backend instead of doing our own timing (we
+          haven't factored out the overhead of null loop, for example).
+
+
 0.09    2012-08-28 (SHARYANTO)
 
         - No functional changes. Some POD tweaks. Add -v (version).
