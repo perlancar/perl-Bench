@@ -100,7 +100,7 @@ if (!@codes && (-f $ARGV[0])) {
 
 1;
 # ABSTRACT: Benchmark running times of Perl code
-# PODNAME: bench
+# PODNAME:
 
 =head1 SYNOPSIS
 
