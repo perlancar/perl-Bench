@@ -1,5 +1,3 @@
-Revision history for Bench
-
 0.10    2014-05-14 (SHARYANTO)
 
         - Use Benchmark as the backend instead of doing our own timing (we
